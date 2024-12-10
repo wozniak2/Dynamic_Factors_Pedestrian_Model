@@ -1,7 +1,9 @@
-# Code and other files for NetLogo Pedestrian Model
+# Code and GIS files for NetLogo Pedestrian Model
 
-## **Repozytorium zawiera:** 
-- Skrypty opracowane w celu ekstrakcji treści ogłoszeń z portali pośrednictwa pracy (pracuj.pl + infopraca.pl) oraz czyszczenia pobranych danych tekstowych (folder **WebScrapping**)
-- Skrypty do analizy i wizualizacji pobranych danych tekstowych (folder **Analysis**)
-- Słownik słów niechcianych do oczyszczania treści ogłoszeń oraz skrypt do tworzenia map (folder **Others**)
-- Dokumentację techniczną (folder główny)
+## **Inside:** 
+- **Data** folder with shapefiles (not all of them are necesssary)
+- **simAllTypesMultiple_SA_rev1** NetLogo file
+
+To run the model you need to download and install NetLogo 6.4: https://ccl.northwestern.edu/netlogo/download.shtml.
+The model file should be places together with data folder.
+
