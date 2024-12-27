@@ -57,17 +57,9 @@ patches-own [
   tag_int
   tag_crowd
   tag_land
-;  tag_land-rational
-  tag_land-maintainer
-  tag_land-environ
-  tag_land-land
-  tag_land-spon
   tag_bui-res
   traffic-intensity
   pois-intensity
-  integration
-  choice
-
 ]
 
 nodes-own [
@@ -93,7 +85,7 @@ walkers-own [
   memoryx
   memoryy
   coordinates
- ; tick-counter
+
   atractor
   distractor
   path
@@ -144,8 +136,6 @@ to setup
   gis:set-drawing-color 2  gis:draw paths 3
   gis:set-drawing-color red  gis:fill noise 1
   gis:set-drawing-color yellow  gis:fill retail 1
- ; gis:set-drawing-color white  gis:fill pois 4
- ; gis:set-drawing-color red  gis:fill landmarks1 1
   gis:set-drawing-color gray  gis:fill land 1
 
 
@@ -221,6 +211,7 @@ i ->
       ]
     ]
   ]
+
   ask routes [set hidden? true ]
   ask nodes  [set traf-int [] ]
 
@@ -229,7 +220,6 @@ i ->
 
  ask patches gis:intersecting parks [
       set tag_parks "green"
-    ;  set pcolor green
     ]
 
 output-print "green done"
@@ -394,7 +384,7 @@ to setup-data
 
   ask n-of num-agen nodes with [residential? = true] [
 
-  ifelse replicate-walking-task? = TRUE
+  ifelse replicate-walking-task? = TRUE ;; if this is true O-D points are set according to the Walking Task
 
     [ let my-patch patch-here
     ; each residential patch sprouts 1 walker; 660 residential patches = 660 walkers
@@ -404,17 +394,15 @@ to setup-data
       move-to one-of starting-point ] ] ]
 
 
-  [ with-local-randomness [ random-seed 47822
+    [ with-local-randomness [ random-seed 47822
     set shape "house"
     set size 2
     let my-patch patch-here
     ; each residential patch sprouts 1 walker; 660 residential patches = 660 walkers
     ask my-patch [ sprout-walkers 1
 
-      ask walkers-here [ set getting-back? FALSE ] ]
-
-  ]  ]
-
+      ask walkers-here [ set getting-back? FALSE ] ] ]
+    ]
 
   ]
 
@@ -435,23 +423,15 @@ output-print "-----------------------------------------------"
                 set tag_lights sentence tag_lights tag_retail
                 set tag_lights sentence tag_lights tag_crossing
                 set tag_lights sentence tag_lights tag_land
-               ; set tag_lights sentence tag_lights tag_land-maintainer
-               ; set tag_lights sentence tag_lights tag_land-environ
-               ; set tag_lights sentence tag_lights tag_land-land
-               ; set tag_lights sentence tag_lights tag_land-spon
                 set tag_lights sentence tag_lights tag_bui-res
                 set tag_lights sentence tag_lights tag_crowd
-                set tag sentence tag_lights tag_parks
-
-                set integration 0 ]
-              ;  set traffic-intensity [] ]  ;; one list of tags for patches
+                set tag sentence tag_lights tag_parks ]
 
   ask nodes [ set nodal-tags [tag] of patches in-radius GIS-distance  ;; import list of tags to nodes
   set nodal-tags reduce sentence reduce sentence nodal-tags ;; escaping from these double brackets [[]]
   set nodal-tags remove 0 nodal-tags
   set nodal-tags remove-duplicates nodal-tags
-  set junction? false
-  ]
+  set junction? false ]
 
   setup-agents
 
@@ -460,19 +440,20 @@ end
 to setup-agents
 
   ask walkers [
+
   set walk-time 0
   set memoryx []
   set memoryy []
   set coordinates []
-   ; let attr ["green" "historic" "retail" "crossing" "landmarks" "landmarks1"]
+   ; let attr ["green" "historic" "retail" "crossing" "landmarks" ]
    ; let dis ["constr" "noise" "emban" "crowd" "lights"]
-    let types ["rational-walker" "rational-walker1" "maintainer" "maintainer_dynamic" "environmental" "environmental1" "landmark" "landmark1" "spontaneous1" "spontaneous"]
+    let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"]
     set my-type one-of types
 
     if my-type = "rational-walker" [
 
-      set atractor [ ]
-      set distractor [ "constr" ]
+      set atractor ["rational" ]
+      set distractor [ "lights" ]
     set spontainity spontaneousness ;0.5
     set attractor-sensitivity  attractor-strength ;0.18
     set distractor-sensitivity repeller-strength ;0.2
@@ -480,56 +461,24 @@ to setup-agents
 
     ]
 
-   if my-type = "rational-walker1" [
-
-    set atractor [ "crossing" "rational"]
-    set distractor [ "lights"]
-    set spontainity spontaneousness ;0.7
-    set attractor-sensitivity attractor-strength ;1.8
-    set distractor-sensitivity repeller-strength ;0.2
-    set discount discount-rate ;0.5
-
-    ]
-
   if my-type = "maintainer" [
 
       set atractor ["maintainer"]
-      set distractor ["emban" "noise" ]
+      set distractor ["emban" "noise" "crowd"]
       set spontainity spontaneousness ;0.4
       set attractor-sensitivity attractor-strength ;0.4
       set distractor-sensitivity repeller-strength ;0.2
       set discount discount-rate ;0.08
-    ]
 
-
-   if my-type = "maintainer_dynamic" [
-
-      set atractor ["maintainer" ]
-      set distractor ["noise" "crowd" "lights"]
-      set spontainity spontaneousness ;0.4
-      set attractor-sensitivity attractor-strength ;0.4
-      set distractor-sensitivity repeller-strength ;1.8
-      set discount discount-rate ;0.08
     ]
 
     if my-type = "environmental" [
 
       set atractor ["environ" ]
-      set distractor ["emban"]
+      set distractor ["emban" "constr" "crowd"]
       set spontainity spontaneousness ;0.9 + random-float 0.2
       set attractor-sensitivity attractor-strength ;2.5
       set distractor-sensitivity repeller-strength ;1
-      set discount discount-rate ;0.08
-
-    ]
-
-    if my-type = "environmental1" [
-
-      set atractor ["environ"]
-      set distractor ["constr" "noise"]
-      set spontainity spontaneousness ;0.9 + random-float 0.2
-      set attractor-sensitivity attractor-strength ;1.3
-      set distractor-sensitivity repeller-strength ;0.5
       set discount discount-rate ;0.08
 
     ]
@@ -545,17 +494,6 @@ to setup-agents
 
     ]
 
-     if my-type = "landmark1" [
-
-      set atractor ["landmark"]
-      set distractor [ "emban"]
-      set spontainity spontaneousness ;0.9 + random-float 0.2
-      set attractor-sensitivity attractor-strength ;1
-      set distractor-sensitivity repeller-strength ;1
-       set discount discount-rate ;0.08
-
-    ]
-
      if my-type = "spontaneous" [
 
       set atractor ["spontan"]
@@ -563,17 +501,6 @@ to setup-agents
       set spontainity spontaneousness ;1
       set attractor-sensitivity attractor-strength ;1.3
       set distractor-sensitivity repeller-strength ;0.8
-      set discount discount-rate ;0.05
-
-    ]
-
-     if my-type = "spontaneous1" [
-
-      set atractor ["spontan" ]
-      set distractor ["constr" ]
-      set spontainity spontaneousness ;1
-      set attractor-sensitivity attractor-strength ;3
-      set distractor-sensitivity repeller-strength ;0.3
       set discount discount-rate ;0.05
 
     ]
@@ -586,7 +513,7 @@ to setup-agents
 
 with-local-randomness [ random-seed 47822 ask walkers with [getting-back? = FALSE]
 
-     [ ifelse replicate-walking-task? = TRUE
+     [ ifelse replicate-walking-task? = TRUE                  ;; if this is true O-D points are set according to the Walking Task
 
         [ ask patch 67 -140 [ let dest-nodes nodes in-radius 3
           ask walkers [
@@ -633,7 +560,7 @@ ask walkers with [getting-back? = TRUE] [
 
 ]
 
-;; adjust hour as crowd depends on hour
+;; adjust hour; crowd intensity depends on hour
 let tdt hour + 5
 ifelse tdt < 10  ; control for proper format of time:create
 
@@ -680,11 +607,14 @@ end
 to go-to-destination  ;; turtle procedure
 
   ask walkers [
+
     let dest nodes in-radius 7
     if one-of dest = destination [ set reached-target? true ]
+
   ]
 
   ask walkers with [not reached-target? and length path > 0] [
+
     let grid-node nodes in-radius abs(speed)
     let path-node item 0 path
     face path-node
@@ -695,12 +625,13 @@ to go-to-destination  ;; turtle procedure
 
     let crowd-num count crowds in-cone 1 45
     let hum-num crowd-num
-    ifelse hum-num > crowd-tolerance [ draw-manouver ]
-                         [speed-up ]
+    ifelse hum-num > crowd-tolerance
+    [ draw-manouver ]
+    [ speed-up ]
 
   ]
-end
 
+end
 
 to draw-manouver
   lt random 180
@@ -728,14 +659,17 @@ to slow-down
  end
 
 to speed-up
+
  let people-ahead-x other crowds in-cone GIS-distance 90
  let person-ahead-x min-one-of people-ahead-x [distance myself]
  if speed <= 0.5 and person-ahead-x = nobody [
     set speed speed + random-float 0.2 ]
+
 end
 
 
 to-report dijkstra [ start-node finish-node ] ;; basic Dijkstra
+
 let current-walker walker who
   ask nodes [
     set dijkstra-visited? false
@@ -940,10 +874,7 @@ end
 
 end
 
-;integration
-;to-report integ
-;  report [ (list pxcor pycor integration) ] of patches with [ walkable-environment = true ]
-;end
+
 
 to-report self-ticks-coords
   ; Report the current ticks and then middle two 'envelope' values of the turtle
