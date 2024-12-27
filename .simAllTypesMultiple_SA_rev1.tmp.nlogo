@@ -136,18 +136,16 @@ to setup
   gis:set-drawing-color 2  gis:draw paths 3
   gis:set-drawing-color red  gis:fill noise 1
   gis:set-drawing-color yellow  gis:fill retail 1
-  gis:set-drawing-color gray  gis:fill land 1
-
-
-   gis:set-drawing-color 66 gis:fill hist 2
-   gis:set-drawing-color yellow  gis:fill lights 5
-   gis:set-drawing-color orange  gis:fill cross 2
-   gis:set-drawing-color gray  gis:fill constr 2
+  gis:set-drawing-color   gis:fill land 1
+  gis:set-drawing-color 66 gis:fill hist 2
+  gis:set-drawing-color white  gis:fill lights 1
+  gis:set-drawing-color orange  gis:fill cross 2
+  gis:set-drawing-color gray  gis:fill constr 2
   gis:set-drawing-color blue  gis:fill hist 2
 
 
-  gis:set-world-envelope-ds (gis:envelope-union-of (gis:envelope-of build)
-    (gis:envelope-of constr) (gis:envelope-of hist) (gis:envelope-of embar) (gis:envelope-of parks) (gis:envelope-of noise)
+  gis:set-world-envelope-ds ( gis:envelope-union-of (gis:envelope-of build)
+  (gis:envelope-of constr) (gis:envelope-of hist) (gis:envelope-of embar) (gis:envelope-of parks) (gis:envelope-of noise)
   (gis:envelope-of retail) (gis:envelope-of land) (gis:envelope-of parks) (gis:envelope-of tram) (gis:envelope-of cr) )
 
   display-streets-in-patches
@@ -190,7 +188,7 @@ i ->
     set size 0.6
     set shape "circle"
     set color 23
-    set hidden? false
+    set hidden? true
     ]
   ]
 ;to create links
@@ -278,7 +276,6 @@ output-print "landmarks done"
 
  output-print "residential buildings done"
 
-
  ask patches gis:intersecting retail [
   set tag_retail "retail"
   set pcolor yellow
@@ -289,7 +286,7 @@ output-print "retail done"
  foreach gis:feature-list-of tram [ ;for each polygon
  point ->
  ask patches gis:intersecting point [ set tag_tram (gis:property-value point "tram")
-    set pcolor brown]
+      set pcolor brown ]
   ]
 
 output-print "tram done"
@@ -318,7 +315,7 @@ to setup-data
    set tram-data csv:from-file "data/tram_dta_transposed.csv"
 
   ask patches with [ tag_tram != 0] [
-    ;let in-id item 1 item 0 tram-data
+
     let i 0
     let data tram-data
     while [ i < length tram-data ]
@@ -331,9 +328,11 @@ to setup-data
     ]
       set i i + 1
     ]
+
   let tram-nodes min-one-of nodes [ distance myself ]
-  ask tram-nodes [set color orange set size 6 set shape "car" set hidden? false
-    ]
+
+  ask tram-nodes [ set color orange set size 6 set shape "car" set hidden? false ]
+
   ]
 
   set pois-data csv:from-file "data/pois_traffic.csv"
@@ -354,13 +353,13 @@ to setup-data
       set x x + 1
     ]
   let pois-nodes min-one-of nodes [ distance myself ]
-  ask pois-nodes [set color white set size 4 set shape "house" set hidden? false
+  ask pois-nodes [set color 44 set size 4 set shape "house" set hidden? false
       set pois-tags [tag_pois] of myself
   ]
 
     if item hour pois-intensity > crowd-tolerance [set tag_int "crowd" ]
     sprout-crowds item hour pois-intensity
-    ask crowds [set shape "person" set size 2 set color gray
+    ask crowds [set shape "person" set size 2 set color 114
     let nd nodes in-radius 20
     let my-nd one-of nd
     move-to my-nd
@@ -875,7 +874,6 @@ end
 end
 
 
-
 to-report self-ticks-coords
   ; Report the current ticks and then middle two 'envelope' values of the turtle
   report  sentence ticks (reduce sentence sublist gis:envelope-of self 1 3)
@@ -904,13 +902,6 @@ to-report distances
   let dlist ( [sum-dist] of walkers )
   report dlist
 end
-
-;to-report times
-;  ifelse count walkers with [reached-target? = false ] = 0
-;  [ report mean [ walk-time ] of walkers ]
-;  [ report 0 ]
-
-;end
 
 to-report typ
   let tlist ( [my-type] of walkers )
