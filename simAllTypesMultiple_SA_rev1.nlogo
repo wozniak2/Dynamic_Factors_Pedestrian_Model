@@ -34,10 +34,8 @@ globals [
   patch_size
   tick-datetime
   tram-data
-  tram_data
   pois-data
   pois
-
 
  ]
 
@@ -59,11 +57,11 @@ patches-own [
   tag_int
   tag_crowd
   tag_land
-  tag_land-rational
-  tag_land-maintainer
-  tag_land-environ
-  tag_land-land
-  tag_land-spon
+;  tag_land-rational
+;  tag_land-maintainer
+;  tag_land-environ
+;  tag_land-land
+;  tag_land-spon
   tag_bui-res
   traffic-intensity
   pois-intensity
