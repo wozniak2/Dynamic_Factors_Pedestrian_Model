@@ -1,7 +1,7 @@
 # Code and GIS files for NetLogo Pedestrian Model
 
 ## **Inside:** 
-- **SA** Python sensitivity analysis files for NetLogo model
+- **SA** folder with sensitivity analysis scripts (Python) for NetLogo model
 - **Data** folder with shapefiles (not all of them are necesssary)
 - **simAllTypesMultiple_SA_rev1** NetLogo file (revised version with weighted bonuses for attractors and repellers and 1 shapefile with landmarks)
 
