@@ -653,7 +653,7 @@ to slow-down
    if cross-ahead != nobody [
    let nt [nodal-tags] of cross-ahead
     if not empty? nt [
-      if one-of nt = "lights" [set speed 0.05] ] ]
+      if one-of nt = "lights" [set speed 0.05] ] ] ;; always slow down before entering light crossings
 
  end
 
