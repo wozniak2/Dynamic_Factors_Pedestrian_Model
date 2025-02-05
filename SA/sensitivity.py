@@ -22,22 +22,29 @@ from SALib.analyze import sobol
 
 
 problem = {
-    "num_vars": 4,
+    "num_vars": 8,
     "names": [
         "attractor-strength",
         "repeller-strength",
          "crowd-tolerance",
          "noise-intensity",
-
-    
+         "trip-distance",
+         "GIS-distance",
+         "spontaneousness",
+         "discount-rate",
     ],
+    
     "bounds": [
         [0, 1],
         [0, 1],
         [1, 10],
         [0, 42],
-  
+        [10, 100],
+        [0, 10],
+        [0, 1],
+        [0, 1],
     ],
+    
 }
 
 # The sampler generates an input array of shape (n(2p+2), p) with rows 
