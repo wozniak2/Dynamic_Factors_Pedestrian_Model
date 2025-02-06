@@ -468,7 +468,7 @@ to setup-agents
    ; let attr ["green" "historic" "retail" "crossing" "landmarks" ]
    ; let dis ["constr" "noise" "emban" "crowd" "lights"]
     let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"]
-    set my-type "landmark"
+    set my-type one-of types
 
     if my-type = "rational-walker" [
 
@@ -1030,7 +1030,7 @@ GIS-distance
 GIS-distance
 0
 15
-5.0
+6.0
 1
 1
 NIL
@@ -1237,7 +1237,7 @@ discount-rate
 discount-rate
 0
 1
-0.62
+0.65
 0.01
 1
 NIL

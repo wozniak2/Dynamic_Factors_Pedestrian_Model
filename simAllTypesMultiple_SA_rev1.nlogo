@@ -802,8 +802,14 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
           ;; each turtle differ in-term of costs
        ;  ifelse count my-routes > 1 [
 
-          set good-value c-good * random-float add ; frequency of attractor * sensitivity to attractor
-          set bad-value c-bad * random-float sub
+          let lower-add add - 0.3 * add
+          let upper-add add + 0.3 * add
+
+          let lower-sub sub - 0.3 * sub
+          let upper-sub sub + 0.3 * sub
+
+          set good-value c-good * (lower-add + (random-float (upper-add - lower-add))) ; frequency of attractor * sensitivity to attractor
+          set bad-value c-bad * (lower-sub + (random-float (upper-sub - lower-sub)))
 
       ; total cost of given road segment (link); the bad and good value are weighted by link-length (cb)
       ; d - distance to destination; cb - link-length of given segment; disc - constans;
@@ -811,7 +817,7 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
       ; bad-value - frequency count of repellers at given node
       ; good-value - frequency of attractors at given node
 
-          let dd d + cb * (disc + random-float spon) + cb * bad-value - cb * good-value
+          let dd d + (cb * discount-rate) + (cb * bad-value) - (cb * good-value) - (cb * spontaneousness)
 
          ifelse  dd < dijkstra-distance [
             set dijkstra-distance dd
@@ -978,7 +984,7 @@ num-agen
 num-agen
 0
 100
-20.0
+8.0
 1
 1
 NIL
@@ -1004,7 +1010,7 @@ GIS-distance
 GIS-distance
 0
 15
-6.0
+1.0
 1
 1
 NIL
@@ -1181,7 +1187,7 @@ trip-distance
 trip-distance
 10
 100
-50.0
+10.0
 1
 1
 NIL
@@ -1226,7 +1232,7 @@ spontaneousness
 spontaneousness
 0
 1
-0.1
+0.0
 0.1
 1
 NIL
@@ -1239,9 +1245,9 @@ SLIDER
 416
 discount-rate
 discount-rate
-0
+0.5
 1
-0.2
+0.7
 0.01
 1
 NIL
