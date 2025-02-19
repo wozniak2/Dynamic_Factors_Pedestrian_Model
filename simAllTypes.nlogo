@@ -1017,7 +1017,7 @@ num-agen
 num-agen
 0
 660
-660.0
+8.0
 1
 1
 NIL
@@ -1091,7 +1091,7 @@ hour
 hour
 1
 12
-10.0
+12.0
 1
 1
 NIL
@@ -1163,7 +1163,7 @@ SWITCH
 300
 utility?
 utility?
-1
+0
 1
 -1000
 

@@ -452,7 +452,7 @@ to setup-agents
     if my-type = "rational-walker" [
 
       set atractor ["rational" "crossing"]
-      set distractor [ "lights" ]
+      set distractor [ "lights" "constr" ]
     set spontainity spontaneousness ;0.5
     set attractor-sensitivity  attractor-strength ;0.18
     set distractor-sensitivity repeller-strength ;0.2
@@ -474,7 +474,7 @@ to setup-agents
     if my-type = "environmental" [
 
       set atractor ["environ" "emban"]
-      set distractor ["constr"]
+      set distractor ["constr" "crowd"]
       set spontainity spontaneousness ;0.9 + random-float 0.2
       set attractor-sensitivity attractor-strength ;2.5
       set distractor-sensitivity repeller-strength ;1
@@ -485,7 +485,7 @@ to setup-agents
      if my-type = "landmark" [
 
       set atractor ["landmark" "historic"]
-      set distractor [ "noise"]
+      set distractor [ "noise" "crowd" "lights"]
       set spontainity spontaneousness ;0.9 + random-float 0.2
       set attractor-sensitivity attractor-strength ;1.5
       set distractor-sensitivity repeller-strength ;0.7
@@ -496,7 +496,7 @@ to setup-agents
      if my-type = "spontaneous" [
 
       set atractor ["spontan" "crossing"]
-      set distractor [ "emban"]
+      set distractor [ "emban" "noise"]
       set spontainity spontaneousness ;1
       set attractor-sensitivity attractor-strength ;1.3
       set distractor-sensitivity repeller-strength ;0.8
@@ -1065,7 +1065,7 @@ hour
 hour
 1
 12
-10.0
+12.0
 1
 1
 NIL

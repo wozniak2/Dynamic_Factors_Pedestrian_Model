@@ -39,7 +39,7 @@ problem = {
         [0, 1],
         [1, 10],
         [0, 42],
-        [20, 200],
+        [40, 200],
         [1, 10],
         [0, 0.5],
         [0.5, 1],
@@ -86,7 +86,7 @@ import pandas as pd
 netlogo = pynetlogo.NetLogoLink(gui=False)
 
 # Load the Model
-netlogo.load_model('C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/simAllTypesMultiple_SA_rev1.nlogo')
+netlogo.load_model('C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/simAllTypes_SA.nlogo')
 
 
 def simulation(experiment):
@@ -127,36 +127,89 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-nrow = len(results.columns)
-ncol = len(problem["names"])
+#nrow = len(results.columns)
+#ncol = len(problem["names"])
 
-fig, (ax1, ax2) = plt.subplots(nrow, ncol)
+# plot distances
+
+nrow = 2
+ncol = 4
+
+fig, ax = plt.subplots(nrow, ncol, sharey = True)
+#fig, (ax1, ax2) = plt.subplots(nrow, ncol)
 y = results["Avg. distances"]
-z = results["Avg. times"]
+#z = results["Avg. times"]
 
-for i, ax1 in enumerate(ax1.flatten()):
+for i, ax in enumerate(ax.flatten()):
     x = param_values[:, i]
     sns.regplot(
         x=x,
         y=y,
-        ax=ax1,
+        ax=ax,
         ci=None,
         color="k",
         scatter_kws={"alpha": 0.2, "s": 4, "color": "gray"},
     )
     pearson = scipy.stats.pearsonr(x, y)
-    ax1.annotate(
+    ax.annotate(
         "r: {:6.3f}".format(pearson[0]),
         xy=(0.15, 0.85),
         xycoords="axes fraction",
-        fontsize=13,
+        fontsize=17,
     )
-    if divmod(i, ncol)[1] > 0:
-        ax1.get_yaxis().set_visible(False)
-        ax1.set_xlabel(problem["names"][i])
-    ax1.set_ylim([0, 1.1 * np.max(y)])
+    if divmod(i, ncol)[1] >= 0:
+        ax.get_yaxis().set_visible(False)
+        ax.set_xlabel(problem["names"][i])
+    ax.set_ylim([0, 1.1 * np.max(y)])
   
-   
+fig.set_size_inches(11, 7, forward=True)
+fig.subplots_adjust(wspace=0.3, hspace=0.4)
+
+plt.show() 
+
+
+# plot times
+
+nrow = 2
+ncol = 4
+
+fig, ax = plt.subplots(nrow, ncol, sharey = True)
+#fig, (ax1, ax2) = plt.subplots(nrow, ncol)
+y = results["Avg. times"]
+#z = results["Avg. times"]
+
+for i, ax in enumerate(ax.flatten()):
+    x = param_values[:, i]
+    sns.regplot(
+        x=x,
+        y=y,
+        ax=ax,
+        ci=None,
+        color="k",
+        scatter_kws={"alpha": 0.2, "s": 4, "color": "gray"},
+    )
+    pearson = scipy.stats.pearsonr(x, y)
+    ax.annotate(
+        "r: {:6.3f}".format(pearson[0]),
+        xy=(0.15, 0.85),
+        xycoords="axes fraction",
+        fontsize=17,
+    )
+    if divmod(i, ncol)[1] >= 0:
+        ax.get_yaxis().set_visible(False)
+        ax.set_xlabel(problem["names"][i])
+    ax.set_ylim([0, 1.1 * np.max(y)])
+  
+fig.set_size_inches(11, 7, forward=True)
+fig.subplots_adjust(wspace=0.3, hspace=0.4)
+
+plt.show() 
+
+
+
+# Combinded plot - for tests only
+
+  
 for i, ax2 in enumerate(ax2.flatten()):
     x = param_values[:, i]
     sns.regplot(
@@ -179,7 +232,7 @@ for i, ax2 in enumerate(ax2.flatten()):
     ax2.set_xlabel(problem["names"][i], fontsize=14)
     ax2.set_ylim([0, 1.1 * np.max(z)])
 
-fig.set_size_inches(9, 7, forward=True)
+fig.set_size_inches(16, 7, forward=True)
 fig.subplots_adjust(wspace=0.2, hspace=0.2)
 
 plt.show()
