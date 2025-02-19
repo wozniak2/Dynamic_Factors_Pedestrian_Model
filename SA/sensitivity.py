@@ -30,7 +30,7 @@ problem = {
          "noise-intensity",
          "trip-distance",
          "GIS-distance",
-         "spontaneousness",
+         "route-variability",
          "discount-rate",
     ],
     
@@ -39,9 +39,9 @@ problem = {
         [0, 1],
         [1, 10],
         [0, 42],
-        [10, 100],
+        [20, 200],
         [1, 10],
-        [0, 1],
+        [0, 0.5],
         [0.5, 1],
     ],
     
@@ -51,7 +51,7 @@ problem = {
 # for each experiment and columns for each input parameter.
 # Should be more; 10 is for tests
 
-n = 25
+n = 10
 param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 # Start engines (6 cores)
@@ -153,7 +153,7 @@ for i, ax1 in enumerate(ax1.flatten()):
     )
     if divmod(i, ncol)[1] > 0:
         ax1.get_yaxis().set_visible(False)
-#       ax1.set_xlabel(problem["names"][i])
+        ax1.set_xlabel(problem["names"][i])
     ax1.set_ylim([0, 1.1 * np.max(y)])
   
    

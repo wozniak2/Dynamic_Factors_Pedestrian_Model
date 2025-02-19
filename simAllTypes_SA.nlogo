@@ -1,7 +1,7 @@
 ; Pedestrian model v 3.0
 ; Decoding Pedestrian Behaviour
 
-extensions [gis time nw csv table]
+extensions [gis time nw csv]
 breed [targets target]
 breed [walkers walker]
 breed [crowds crowd]
@@ -36,7 +36,7 @@ globals [
   tram-data
   pois-data
   pois
-  sensitivities
+
  ]
 
 patches-own [
@@ -115,8 +115,6 @@ to setup
   reset-ticks
   ask patches [set pcolor black]
 
- ; importing GIS
-
   set paths gis:load-dataset "data/paths27.shp"
   set build gis:load-dataset "data/bui3.shp"
   set parks gis:load-dataset "data/trees.shp"
@@ -133,12 +131,10 @@ to setup
   set bui-res gis:load-dataset "data/bui_res.shp"
   set cr gis:load-dataset "data/crowd.shp"
 
- ; coloring world
-
   gis:set-drawing-color 126  gis:fill embar 1
   gis:set-drawing-color 62  gis:fill parks 2
   gis:set-drawing-color 2  gis:draw paths 3
-  gis:set-drawing-color red  gis:fill noise
+  gis:set-drawing-color red  gis:fill noise 1
   gis:set-drawing-color yellow  gis:fill retail 1
   gis:set-drawing-color 114  gis:fill land 1
   gis:set-drawing-color 66 gis:fill hist 2
@@ -195,9 +191,7 @@ i ->
     set hidden? true
     ]
   ]
-
-; to create links
-
+;to create links
   let node-here (nodes with [xcor = item 0 location and ycor = item 1 location])
   ifelse previous-node-point = nobody
   [set first-node-point node-here]
@@ -219,7 +213,7 @@ i ->
   ask routes [set hidden? true ]
   ask nodes  [set traf-int [] ]
 
-;; importing properties from GIS files to patches
+;; importing properties from GIS files
   ask patches [ set tag_land [] ]
 
  ask patches gis:intersecting parks [
@@ -438,24 +432,9 @@ output-print "-----------------------------------------------"
   set nodal-tags remove-duplicates nodal-tags
   set junction? false ]
 
-  create-sensitivities-table
-
-end
-
-to create-sensitivities-table
-
-set sensitivities table:make
-
-table:put sensitivities "very_low" 0.10
-table:put sensitivities "low" 0.25
-table:put sensitivities "medium" 0.5
-table:put sensitivities "high" 0.75
-table:put sensitivities "very high" 1
-
   setup-agents
 
 end
-
 
 to setup-agents
 
@@ -472,55 +451,55 @@ to setup-agents
 
     if my-type = "rational-walker" [
 
-      set atractor ["rational" ]
+      set atractor ["rational" "crossing"]
       set distractor [ "lights" ]
     set spontainity spontaneousness ;0.5
-    set attractor-sensitivity  table:get sensitivities "very_low" ;0.18
-    set distractor-sensitivity table:get sensitivities "low" ;0.2
+    set attractor-sensitivity  attractor-strength ;0.18
+    set distractor-sensitivity repeller-strength ;0.2
     set discount  discount-rate ;0.5
 
     ]
 
   if my-type = "maintainer" [
 
-      set atractor ["maintainer"]
-      set distractor ["emban" "noise" "crowd"]
+      set atractor ["maintainer" "green"]
+      set distractor [ "noise" "crowd"]
       set spontainity spontaneousness ;0.4
-      set attractor-sensitivity table:get sensitivities "medium" ;0.4
-      set distractor-sensitivity table:get sensitivities "low" ;0.2
+      set attractor-sensitivity attractor-strength ;0.4
+      set distractor-sensitivity repeller-strength ;0.2
       set discount discount-rate ;0.08
 
     ]
 
     if my-type = "environmental" [
 
-      set atractor ["environ" ]
-      set distractor ["emban" "constr" "crowd"]
+      set atractor ["environ" "emban"]
+      set distractor ["constr"]
       set spontainity spontaneousness ;0.9 + random-float 0.2
-      set attractor-sensitivity table:get sensitivities "medium" ;2.5
-      set distractor-sensitivity table:get sensitivities "medium" ;1
+      set attractor-sensitivity attractor-strength ;2.5
+      set distractor-sensitivity repeller-strength ;1
       set discount discount-rate ;0.08
 
     ]
 
      if my-type = "landmark" [
 
-      set atractor ["landmark"]
-      set distractor ["emban" "noise"]
+      set atractor ["landmark" "historic"]
+      set distractor [ "noise"]
       set spontainity spontaneousness ;0.9 + random-float 0.2
-      set attractor-sensitivity table:get sensitivities "high" ;1.5
-      set distractor-sensitivity table:get sensitivities "low" ;0.7
+      set attractor-sensitivity attractor-strength ;1.5
+      set distractor-sensitivity repeller-strength ;0.7
        set discount discount-rate ;0.08
 
     ]
 
      if my-type = "spontaneous" [
 
-      set atractor ["spontan"]
+      set atractor ["spontan" "crossing"]
       set distractor [ "emban"]
       set spontainity spontaneousness ;1
-      set attractor-sensitivity table:get sensitivities "high" ;1.3
-      set distractor-sensitivity table:get sensitivities "medium";0.8
+      set attractor-sensitivity attractor-strength ;1.3
+      set distractor-sensitivity repeller-strength ;0.8
       set discount discount-rate ;0.05
 
     ]
@@ -542,8 +521,11 @@ with-local-randomness [ random-seed 47822 ask walkers with [getting-back? = FALS
           ] ] ]
 
         [ let dest-nodes nodes with [member? "retail" nodal-tags or pois-tags != 0]
-          let dest-nodes2 dest-nodes with [ distance myself > trip-distance and distance myself < world-width / 2 ]
-          set destination one-of dest-nodes2
+          let dest-nodes2 dest-nodes with [ distance myself < trip-distance ]
+
+        ifelse fixed-OD? = TRUE
+           [ set destination one-of dest-nodes2 with-max [ distance myself ]]
+           [ set destination one-of dest-nodes2 ]
           ask destination [ set color white set size 2]
           set color one-of remove grey base-colors ] ]
 
@@ -822,14 +804,19 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
 
           ;; each turtle differ in-term of costs
        ;  ifelse count my-routes > 1 [
-          let lower-add add - 0.3 * add
-          let upper-add add + 0.3 * add
+          ;; each turtle differ in-term of costs
+       ;  ifelse count my-routes > 1 [
+          let lower-add add - route-variability * add
+          let upper-add add + route-variability * add
 
-          let lower-sub sub - 0.3 * sub
-          let upper-sub sub + 0.3 * sub
+          let lower-sub sub - route-variability * sub
+          let upper-sub sub + route-variability * sub
 
-          set good-value c-good * (lower-add + (random-float (upper-add - lower-add))) ; frequency of attractor * sensitivity to attractor
+          set good-value c-good * (lower-add + (random-float (upper-add - lower-add))); frequency of attractor * sensitivity to attractor
           set bad-value c-bad * (lower-sub + (random-float (upper-sub - lower-sub)))
+
+          set good-value c-good * (random-normal add route-variability); frequency of attractor * sensitivity to attractor
+          set bad-value c-bad * (random-normal sub route-variability)
 
       ; total cost of given road segment (link); the bad and good value are weighted by link-length (cb)
       ; d - distance to destination; cb - link-length of given segment; disc - constans;
@@ -1004,7 +991,7 @@ num-agen
 num-agen
 0
 100
-9.0
+20.0
 1
 1
 NIL
@@ -1030,7 +1017,7 @@ GIS-distance
 GIS-distance
 0
 15
-6.0
+1.0
 1
 1
 NIL
@@ -1207,8 +1194,38 @@ trip-distance
 trip-distance
 10
 100
-50.0
+40.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+214
+447
+386
+480
+repeller-strength
+repeller-strength
+0
+1
+0.31
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+214
+411
+386
+444
+attractor-strength
+attractor-strength
+0
+1
+0.53
+0.01
 1
 NIL
 HORIZONTAL
@@ -1235,9 +1252,9 @@ SLIDER
 416
 discount-rate
 discount-rate
-0
+0.5
 1
-0.65
+0.7
 0.01
 1
 NIL
@@ -1252,7 +1269,7 @@ noise-intensity
 noise-intensity
 0
 42
-16.0
+20.0
 1
 1
 NIL
@@ -1266,6 +1283,32 @@ SWITCH
 replicate-walking-task?
 replicate-walking-task?
 1
+1
+-1000
+
+SLIDER
+63
+472
+235
+505
+route-variability
+route-variability
+0
+1
+0.3
+0.1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+69
+597
+180
+630
+fixed-OD?
+fixed-OD?
+0
 1
 -1000
 
