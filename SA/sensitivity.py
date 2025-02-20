@@ -51,7 +51,7 @@ problem = {
 # for each experiment and columns for each input parameter.
 # Should be more; 10 is for tests
 
-n = 256
+n = 30
 param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 # Start engines (6 cores)
