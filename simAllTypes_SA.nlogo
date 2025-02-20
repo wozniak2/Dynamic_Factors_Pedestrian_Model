@@ -357,8 +357,8 @@ to setup-data
       set pois-tags [tag_pois] of myself
   ]
 
-    if item hour pois-intensity > crowd-tolerance [set tag_int "crowd" ]
-    sprout-crowds item hour pois-intensity
+    if item crowd-intensity pois-intensity > crowd-tolerance [set tag_int "crowd" ]
+    sprout-crowds item crowd-intensity pois-intensity
     ask crowds [set shape "person" set size 2 set color grey
     let nd nodes in-radius 20
     let my-nd one-of nd
@@ -463,7 +463,7 @@ to setup-agents
   if my-type = "maintainer" [
 
       set atractor ["maintainer" "green"]
-      set distractor [ "noise" "crowd"]
+      set distractor [ "noise" "crowd" "emban"]
       set spontainity spontaneousness ;0.4
       set attractor-sensitivity attractor-strength ;0.4
       set distractor-sensitivity repeller-strength ;0.2
@@ -485,7 +485,7 @@ to setup-agents
      if my-type = "landmark" [
 
       set atractor ["landmark" "historic"]
-      set distractor [ "noise" "crowd" "lights"]
+      set distractor [ "noise" "crowd" "lights" "emban"]
       set spontainity spontaneousness ;0.9 + random-float 0.2
       set attractor-sensitivity attractor-strength ;1.5
       set distractor-sensitivity repeller-strength ;0.7
@@ -496,7 +496,7 @@ to setup-agents
      if my-type = "spontaneous" [
 
       set atractor ["spontan" "crossing"]
-      set distractor [ "emban" "noise"]
+      set distractor [ "emban" "noise" "lights"]
       set spontainity spontaneousness ;1
       set attractor-sensitivity attractor-strength ;1.3
       set distractor-sensitivity repeller-strength ;0.8
@@ -563,7 +563,7 @@ ask walkers with [getting-back? = TRUE] [
 ]
 
 ;; adjust hour; crowd intensity depends on hour
-let tdt hour + 5
+let tdt round(crowd-intensity) + 5
 ifelse tdt < 10  ; control for proper format of time:create
 
 [ let time (word "2024-11-22 " 0 tdt  ":00:00")
@@ -991,7 +991,7 @@ num-agen
 num-agen
 0
 100
-20.0
+30.0
 1
 1
 NIL
@@ -1061,8 +1061,8 @@ SLIDER
 373
 387
 406
-hour
-hour
+crowd-intensity
+crowd-intensity
 1
 12
 12.0
@@ -1113,7 +1113,7 @@ crowd-tolerance
 crowd-tolerance
 1
 10
-5.0
+1.0
 1
 1
 NIL

@@ -26,7 +26,7 @@ problem = {
     "names": [
         "attractor-strength",
         "repeller-strength",
-         "crowd-tolerance",
+         "crowd-intensity",
          "noise-intensity",
          "trip-distance",
          "GIS-distance",
@@ -37,7 +37,7 @@ problem = {
     "bounds": [
         [0, 1],
         [0, 1],
-        [1, 10],
+        [1, 12],
         [0, 42],
         [40, 200],
         [1, 10],
@@ -51,7 +51,7 @@ problem = {
 # for each experiment and columns for each input parameter.
 # Should be more; 10 is for tests
 
-n = 10
+n = 256
 param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 # Start engines (6 cores)
@@ -157,9 +157,9 @@ for i, ax in enumerate(ax.flatten()):
         xycoords="axes fraction",
         fontsize=17,
     )
-    if divmod(i, ncol)[1] >= 0:
+    if divmod(i, ncol)[1] > 0:
         ax.get_yaxis().set_visible(False)
-        ax.set_xlabel(problem["names"][i])
+    ax.set_xlabel(problem["names"][i])
     ax.set_ylim([0, 1.1 * np.max(y)])
   
 fig.set_size_inches(11, 7, forward=True)
@@ -195,9 +195,9 @@ for i, ax in enumerate(ax.flatten()):
         xycoords="axes fraction",
         fontsize=17,
     )
-    if divmod(i, ncol)[1] >= 0:
+    if divmod(i, ncol)[1] > 0:
         ax.get_yaxis().set_visible(False)
-        ax.set_xlabel(problem["names"][i])
+    ax.set_xlabel(problem["names"][i])
     ax.set_ylim([0, 1.1 * np.max(y)])
   
 fig.set_size_inches(11, 7, forward=True)
