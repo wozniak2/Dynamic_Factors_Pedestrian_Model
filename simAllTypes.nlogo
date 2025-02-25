@@ -845,7 +845,7 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
       ; bad-value - frequency count of repellers at given node
       ; good-value - frequency of attractors at given node
 
-          let dd d + (cb * discount-rate) + (cb * bad-value) - (cb * good-value) - (cb * spontaneousness)
+          let dd d + (cb * discount-rate) + (cb * bad-value) - (cb * good-value)
 
          ifelse  dd < dijkstra-distance [
             set dijkstra-distance dd
@@ -1222,21 +1222,6 @@ trip-distance
 200
 200.0
 1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-7
-346
-179
-379
-spontaneousness
-spontaneousness
-0
-1
-0.0
-0.1
 1
 NIL
 HORIZONTAL
