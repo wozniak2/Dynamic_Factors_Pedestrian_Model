@@ -1017,7 +1017,7 @@ num-agen
 num-agen
 0
 660
-15.0
+8.0
 1
 1
 NIL
@@ -1043,7 +1043,7 @@ GIS-distance
 GIS-distance
 0
 15
-10.0
+6.0
 1
 1
 NIL
@@ -1235,7 +1235,7 @@ discount-rate
 discount-rate
 0
 1
-0.73
+0.5
 0.01
 1
 NIL
@@ -1250,7 +1250,7 @@ noise-intensity
 noise-intensity
 0
 42
-42.0
+0.0
 1
 1
 NIL
@@ -1287,7 +1287,7 @@ route-variability
 route-variability
 0
 0.5
-0.2
+0.3
 0.1
 1
 NIL
