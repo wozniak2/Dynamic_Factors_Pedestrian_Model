@@ -839,9 +839,8 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
         ;  set good-value c-good * (random-normal add route-variability); frequency of attractor * sensitivity to attractor
         ;  set bad-value c-bad * (random-normal sub route-variability)
 
-      ; total cost of given road segment (link); the bad and good value are weighted by link-length (cb)
+      ; total cost of given road segment (link); the bad and good values are weighted by link-length (cb)
       ; d - distance to destination; cb - link-length of given segment; disc - constans;
-      ; spon - random spontanity value to diversify routes of walkers (stochastic component of route behaviour)
       ; bad-value - frequency count of repellers at given node
       ; good-value - frequency of attractors at given node
 
@@ -1287,7 +1286,7 @@ route-variability
 route-variability
 0
 0.5
-0.2
+0.3
 0.1
 1
 NIL

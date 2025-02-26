@@ -447,16 +447,29 @@ to setup-agents
    ; let attr ["green" "historic" "retail" "crossing" "landmarks" ]
    ; let dis ["constr" "noise" "emban" "crowd" "lights"]
     let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"]
-    set my-type one-of types
+
+    set my-type "type-0"
+
+    if my-type = "type-0" [
+
+    set atractor ["landmark" "historic" "retail" "crossing" "green"]
+     set distractor [ "lights" "constr" "emban" "noise" "crowd" ]
+ ;   set spontainity spontaneousness ;0.5
+    set attractor-sensitivity  attractor-strength ;0.18
+    set distractor-sensitivity repeller-strength ;0.2
+    set discount  segment-weight ;0.5
+    ]
+
+
 
     if my-type = "rational-walker" [
 
       set atractor ["rational" "crossing"]
       set distractor [ "lights" "constr" ]
-    set spontainity spontaneousness ;0.5
+ ;   set spontainity spontaneousness ;0.5
     set attractor-sensitivity  attractor-strength ;0.18
     set distractor-sensitivity repeller-strength ;0.2
-    set discount  discount-rate ;0.5
+    set discount  segment-weight ;0.5
 
     ]
 
@@ -464,10 +477,10 @@ to setup-agents
 
       set atractor ["maintainer" "green"]
       set distractor [ "noise" "crowd" "emban"]
-      set spontainity spontaneousness ;0.4
+     ; set spontainity spontaneousness ;0.4
       set attractor-sensitivity attractor-strength ;0.4
       set distractor-sensitivity repeller-strength ;0.2
-      set discount discount-rate ;0.08
+      set discount segment-weight ;0.08
 
     ]
 
@@ -475,10 +488,10 @@ to setup-agents
 
       set atractor ["environ" "emban"]
       set distractor ["constr" "crowd"]
-      set spontainity spontaneousness ;0.9 + random-float 0.2
+    ;  set spontainity spontaneousness ;0.9 + random-float 0.2
       set attractor-sensitivity attractor-strength ;2.5
       set distractor-sensitivity repeller-strength ;1
-      set discount discount-rate ;0.08
+      set discount segment-weight ;0.08
 
     ]
 
@@ -486,10 +499,10 @@ to setup-agents
 
       set atractor ["landmark" "historic"]
       set distractor [ "noise" "crowd" "lights" "emban"]
-      set spontainity spontaneousness ;0.9 + random-float 0.2
+   ;   set spontainity spontaneousness ;0.9 + random-float 0.2
       set attractor-sensitivity attractor-strength ;1.5
       set distractor-sensitivity repeller-strength ;0.7
-       set discount discount-rate ;0.08
+       set discount segment-weight ;0.08
 
     ]
 
@@ -497,10 +510,10 @@ to setup-agents
 
       set atractor ["spontan" "crossing"]
       set distractor [ "emban" "noise" "lights"]
-      set spontainity spontaneousness ;1
+    ;  set spontainity spontaneousness ;1
       set attractor-sensitivity attractor-strength ;1.3
       set distractor-sensitivity repeller-strength ;0.8
-      set discount discount-rate ;0.05
+      set discount segment-weight ;0.05
 
     ]
 
@@ -806,17 +819,17 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
        ;  ifelse count my-routes > 1 [
           ;; each turtle differ in-term of costs
        ;  ifelse count my-routes > 1 [
-          let lower-add add - route-variability * add
-          let upper-add add + route-variability * add
+          let lower-add add - route-deviation * add
+          let upper-add add + route-deviation * add
 
-          let lower-sub sub - route-variability * sub
-          let upper-sub sub + route-variability * sub
+          let lower-sub sub - route-deviation * sub
+          let upper-sub sub + route-deviation * sub
 
           set good-value c-good * (lower-add + (random-float (upper-add - lower-add))); frequency of attractor * sensitivity to attractor
           set bad-value c-bad * (lower-sub + (random-float (upper-sub - lower-sub)))
 
-          set good-value c-good * (random-normal add route-variability); frequency of attractor * sensitivity to attractor
-          set bad-value c-bad * (random-normal sub route-variability)
+          set good-value c-good * (random-normal add route-deviation); frequency of attractor * sensitivity to attractor
+          set bad-value c-bad * (random-normal sub route-deviation)
 
       ; total cost of given road segment (link); the bad and good value are weighted by link-length (cb)
       ; d - distance to destination; cb - link-length of given segment; disc - constans;
@@ -824,7 +837,7 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
       ; bad-value - frequency count of repellers at given node
       ; good-value - frequency of attractors at given node
 
-          let dd d + (cb * discount-rate) + (cb * bad-value) - (cb * good-value) - (cb * spontaneousness)
+          let dd d + (cb * segment-weight) + (cb * bad-value) - (cb * good-value)
 
          ifelse  dd < dijkstra-distance [
             set dijkstra-distance dd
@@ -1017,7 +1030,7 @@ GIS-distance
 GIS-distance
 0
 15
-1.0
+6.0
 1
 1
 NIL
@@ -1231,27 +1244,12 @@ NIL
 HORIZONTAL
 
 SLIDER
-7
-346
-179
-379
-spontaneousness
-spontaneousness
-0
-1
-0.0
-0.1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-7
-383
-179
-416
-discount-rate
-discount-rate
+36
+410
+208
+443
+segment-weight
+segment-weight
 0.5
 1
 0.7
@@ -1287,12 +1285,12 @@ replicate-walking-task?
 -1000
 
 SLIDER
-63
-472
-235
-505
-route-variability
-route-variability
+38
+448
+210
+481
+route-deviation
+route-deviation
 0
 1
 0.3
@@ -1302,10 +1300,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-69
-597
-180
-630
+18
+340
+129
+373
 fixed-OD?
 fixed-OD?
 0

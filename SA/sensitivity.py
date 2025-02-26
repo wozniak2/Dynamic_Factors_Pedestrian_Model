@@ -30,8 +30,8 @@ problem = {
          "noise-intensity",
          "trip-distance",
          "GIS-distance",
-         "route-variability",
-         "discount-rate",
+         "route-deviation",
+         "segment-weight",
     ],
     
     "bounds": [
@@ -41,7 +41,7 @@ problem = {
         [0, 42],
         [40, 200],
         [1, 10],
-        [0, 0.5],
+        [0, 0.7],
         [0.5, 1],
     ],
     
