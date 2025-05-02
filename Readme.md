@@ -13,7 +13,7 @@ Dynamic factors are repellers that are volatile stimuli arising from social or n
 The model was implemented in NetLogo 6.4 which is a multi-agent programmable modeling environment.
 The model uses following NetLogo extensions:
 - <a href="https://github.com/NetLogo/GIS-Extension" rel="nofollow">GIS extension</a>
-- time https://github.com/NetLogo/Time-Extension
+- <a href="https://github.com/NetLogo/Time-Extension" rel="nofollow">Time extension</a>
 - nw https://github.com/NetLogo/Network-Extension
 - csv
 - table https://github.com/NetLogo/Table-Extension
