@@ -7,9 +7,11 @@ Dynamic factors are repellers that are volatile stimuli arising from social or n
 ## **Inside:** 
 - **SA** folder with sensitivity analysis scripts (Python) for NetLogo model
 - **Data** folder with shapefiles (not all of them are necesssary)
-- **simAllTypesMultiple_SA_rev1** NetLogo file (revised version with weighted bonuses for attractors and repellers and 1 shapefile with landmarks)
+- **simAllTypesMultiple_SA_rev1** NetLogo file
 
+## **How to run the model** 
 To run the model you need to download and install NetLogo 6.4: https://ccl.northwestern.edu/netlogo/download.shtml.
 </br>
 The model file should be places together with data folder.
 
+## **How to run sensitivity analysis on the model** 
