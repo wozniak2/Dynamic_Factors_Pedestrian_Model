@@ -24,5 +24,5 @@ The model produces trajectories patterns accross 5 types of pedestrians.
 Manipulating model parameters allows for introduction of dynamic factors and some other parameters assocciated with route choice behaviour.
 
 ## **How to run sensitivity analysis on the model** 
-Sensitivity Analyis (SA) is fully driven from Python. You will need <a href="https://github.com/quaquel/pyNetLogo" rel="nofollow">PyNetLogo library</a> to access NetLogo from Python.
+Sensitivity Analyis (SA) is fully driven from Python. You will need Python distribution, e.g. <a href="https://www.anaconda.com/docs/getting-started/miniconda/main" rel="nofollow">Miniconda</a> with <a href="https://github.com/quaquel/pyNetLogo" rel="nofollow">PyNetLogo library</a> to access NetLogo from Python.
 Additionally <a href="https://pypi.org/project/SALib/" rel="nofollow">SAlib library</a> that contains Python implementations of commonly used sensitivity analysis methods is required.
