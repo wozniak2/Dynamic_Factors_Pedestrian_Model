@@ -8,7 +8,8 @@ The model illustrates how dynamic factors impact route patterns of pedestrians.
 ## **Inside:** 
 - **SA** folder with sensitivity analysis scripts (Python) for NetLogo model
 - **Data** folder with shapefiles (not all of them are necesssary)
-- **simAllTypesMultiple_SA_rev1** NetLogo file
+- **simAllTypes** NetLogo model file
+- **simAllTypes_SA** NetLogo model file for sensitivity analysis
 
 ## **How to run the model?**
 The model was implemented in NetLogo 6.4 which is a multi-agent programmable modeling environment.
