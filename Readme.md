@@ -1,4 +1,4 @@
-# NetLogo Pedestrian Model with crowd and noise (dynamic factors)
+# Pedestrian Agent-Based Model with crowd and noise (dynamic factors)
 The model simulates pedestrian traffic in the city center of Poznan (Poland).
 The model is parameterised according to emprical study that identified 5 different types of pedestrians: rational walker, maintainer, landmark, environmental and spontaneous.
 Each type is characterised by different behavioural routines that are assocciated with "repellers" and "attractors" that are elements of urban morphology like green areas, POIs, tourist or historic attractions.
