@@ -60,6 +60,8 @@ patches-own [
   tag_bui-res
   traffic-intensity
   pois-intensity
+  integration
+  visited-flag
 ]
 
 nodes-own [
@@ -98,8 +100,10 @@ walkers-own [
   walk-time
   getting-back?
   my-type
-  attractor-sensitivity
-  distractor-sensitivity
+  attractor-sensitivity-l
+  distractor-sensitivity-l
+  attractor-sensitivity-h
+  distractor-sensitivity-h
   stochastic-component
   spontainity
   discount
@@ -117,7 +121,7 @@ to setup
 
  ; importing GIS
 
-  set paths gis:load-dataset "data/paths27.shp"
+  set paths gis:load-dataset "data/paths28.shp"
   set build gis:load-dataset "data/bui3.shp"
   set parks gis:load-dataset "data/trees.shp"
   set embar gis:load-dataset "data/walls.shp"
@@ -366,7 +370,7 @@ to setup-data
     if item hour pois-intensity > crowd-tolerance [set tag_int "crowd" ]
     sprout-crowds item hour pois-intensity
     ask crowds [set shape "person" set size 2 set color grey
-    let nd nodes in-radius 20
+    let nd nodes in-radius 30
     let my-nd one-of nd
     move-to my-nd
     ]
@@ -401,7 +405,7 @@ with-local-randomness [ random-seed 47822
     [ set shape "house"
     set size 2
     let my-patch patch-here
-      print my-patch
+    ;  print my-patch
     ; each residential patch sprouts 1 walker; 660 residential patches = 660 walkers
     ask my-patch [ sprout-walkers 1
 
@@ -428,7 +432,10 @@ output-print "-----------------------------------------------"
                 set tag_lights sentence tag_lights tag_land
                 set tag_lights sentence tag_lights tag_bui-res
                 set tag_lights sentence tag_lights tag_crowd
-                set tag sentence tag_lights tag_parks ]
+                set tag sentence tag_lights tag_parks
+
+                set integration 0
+                set visited-flag false ]
 
   ask nodes [ set nodal-tags [tag] of patches in-radius GIS-distance  ;; import list of tags to nodes
   set nodal-tags reduce sentence reduce sentence nodal-tags ;; escaping from these double brackets [[]]
@@ -444,11 +451,20 @@ to create-sensitivities-table
 
 set sensitivities table:make
 
-table:put sensitivities "very_low" 0.20
-table:put sensitivities "low" 0.35
-table:put sensitivities "medium" 0.50
-table:put sensitivities "high" 0.65
-table:put sensitivities "very_high" 0.80
+table:put sensitivities "very_low_low" 0.00
+table:put sensitivities "very_low_up" 0.20
+
+table:put sensitivities "low_low" 0.20
+table:put sensitivities "low_up" 0.40
+
+table:put sensitivities "medium_low" 0.40
+table:put sensitivities "medium_up" 0.60
+
+table:put sensitivities "high_low" 0.60
+table:put sensitivities "high_up" 0.80
+
+table:put sensitivities "very_high_low" 0.80
+table:put sensitivities "very_high_up" 1.00
 
   setup-agents
 
@@ -465,70 +481,182 @@ to setup-agents
   set coordinates []
    ; let attr ["green" "historic" "retail" "crossing" "landmarks" ]
    ; let dis ["constr" "noise" "emban" "crowd" "lights"]
-    let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"]
-    set my-type one-of types
+
+    ifelse type-0?
+    [let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous" "type-0"] set my-type one-of types ]
+    [let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"] set my-type one-of types ]
+
+
+    ifelse df?
+
+    [if my-type = "type-0" [
+
+    set atractor ["landmark" "green" "historic" "retail" "crossing"]
+    set distractor ["constr" "emban" "lights"]
+    set spontainity 0 ;0.5
+    set attractor-sensitivity-l  table:get sensitivities "very_low_low" ;0.18
+    set distractor-sensitivity-l table:get sensitivities "very_low_low" ;0.2
+    set attractor-sensitivity-h  table:get sensitivities "very_high_up" ;0.18
+    set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+    set discount segment-weight ;0.5
+
+    ]
+
 
     if my-type = "rational-walker" [
 
-      set atractor ["rational" "crossing"]
-      set distractor [ "lights" ]
+    set atractor ["rational" "crossing"]
+    set distractor [ "lights"  ]
     set spontainity 0 ;0.5
-    set attractor-sensitivity  table:get sensitivities "low" ;0.18
-    set distractor-sensitivity table:get sensitivities "very_low" ;0.2
-    set discount discount-rate ;0.5
+    set attractor-sensitivity-l  table:get sensitivities "very_low_low" ;0.18
+    set distractor-sensitivity-l table:get sensitivities "very_low_low" ;0.2
+    set attractor-sensitivity-h  table:get sensitivities "very_low_up" ;0.18
+    set distractor-sensitivity-h table:get sensitivities "very_low_up" ;0.2
+    set discount segment-weight ;0.5
 
     ]
 
   if my-type = "maintainer" [
 
       set atractor ["maintainer" "green"]
-      set distractor ["noise" "crowd"]
+      set distractor ["noise" "crowd" "emban"]
       set spontainity 0;0.4
-      set attractor-sensitivity table:get sensitivities "medium" ;0.4
-      set distractor-sensitivity table:get sensitivities "very_high" ;0.2
-      set discount discount-rate;0.08
+      set attractor-sensitivity-l table:get sensitivities "medium_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "very_high_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "medium_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+      set discount segment-weight;0.08
 
     ]
 
     if my-type = "environmental" [
 
-      set atractor ["environ" "emban" ]
-      set distractor [ "constr"]
+      set atractor ["environ" "green"]
+      set distractor [ "emban" ]
       set spontainity 0;0.9 + random-float 0.2
-      set attractor-sensitivity table:get sensitivities "medium" ;2.5
-      set distractor-sensitivity table:get sensitivities "medium" ;1
-      set discount discount-rate ;0.08
+      set attractor-sensitivity-l table:get sensitivities "medium_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "medium_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "medium_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "medium_up" ;0.2
+      set discount segment-weight ;0.08
 
     ]
 
      if my-type = "landmark" [
 
       set atractor ["landmark" "historic"]
-      set distractor [ "noise"]
+      set distractor ["crowd" "noise" "emban"]
       set spontainity 0 ;0.9 + random-float 0.2
-      set attractor-sensitivity table:get sensitivities "high" ;1.5
-      set distractor-sensitivity table:get sensitivities "low" ;0.7
-       set discount discount-rate ;0.08
+      set attractor-sensitivity-l table:get sensitivities "high_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "high_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "low_up" ;0.2
+       set discount segment-weight ;0.08
 
     ]
 
      if my-type = "spontaneous" [
 
-      set atractor ["spontan" "crossing"]
-      set distractor [ "emban" ]
+      set atractor ["spontan" "retail" ]
+      set distractor [ "lights"]
       set spontainity 0 ;1
-      set attractor-sensitivity table:get sensitivities "very_high" ;1.3
-      set distractor-sensitivity table:get sensitivities "low";0.8
-      set discount discount-rate ;0.05
+      set attractor-sensitivity-l table:get sensitivities "very_high_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "low_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+      set discount segment-weight ;0.05
+
+    ]]
+
+
+
+    [if my-type = "type-0" [
+
+    set atractor ["landmark" "green" "historic" "retail" "crossing"]
+    set distractor ["constr" "noise" "emban" "crowd" "lights"]
+    set spontainity 0 ;0.5
+    set attractor-sensitivity-l  table:get sensitivities "very_low_low" ;0.18
+    set distractor-sensitivity-l table:get sensitivities "very_low_low" ;0.2
+    set attractor-sensitivity-h  table:get sensitivities "very_high_up" ;0.18
+    set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+    set discount segment-weight ;0.5
 
     ]
+
+
+    if my-type = "rational-walker" [
+
+    set atractor ["rational" "crossing"]
+    set distractor [ "lights"  ]
+    set spontainity 0 ;0.5
+    set attractor-sensitivity-l  table:get sensitivities "very_low_low" ;0.18
+    set distractor-sensitivity-l table:get sensitivities "very_low_low" ;0.2
+    set attractor-sensitivity-h  table:get sensitivities "very_low_up" ;0.18
+    set distractor-sensitivity-h table:get sensitivities "very_low_up" ;0.2
+    set discount segment-weight ;0.5
+
+    ]
+
+  if my-type = "maintainer" [
+
+      set atractor ["maintainer" "green"]
+      set distractor [ "emban"]
+      set spontainity 0;0.4
+      set attractor-sensitivity-l table:get sensitivities "medium_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "very_high_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "medium_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+      set discount segment-weight;0.08
+
+    ]
+
+    if my-type = "environmental" [
+
+      set atractor ["environ" "green"]
+      set distractor [ "emban" ]
+      set spontainity 0;0.9 + random-float 0.2
+      set attractor-sensitivity-l table:get sensitivities "medium_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "medium_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "medium_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "medium_up" ;0.2
+      set discount segment-weight ;0.08
+
+    ]
+
+     if my-type = "landmark" [
+
+      set atractor ["landmark" "historic"]
+      set distractor ["emban"]
+      set spontainity 0 ;0.9 + random-float 0.2
+      set attractor-sensitivity-l table:get sensitivities "high_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "high_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "low_up" ;0.2
+       set discount segment-weight ;0.08
+
+    ]
+
+     if my-type = "spontaneous" [
+
+      set atractor ["spontan" "retail" ]
+      set distractor [ "lights"]
+      set spontainity 0 ;1
+      set attractor-sensitivity-l table:get sensitivities "very_high_low" ;0.4
+      set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "low_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+      set discount segment-weight ;0.05
+
+    ]]
+
+
+
 
      set cost-list []
      set dist-list []
      set reached-target? false
 
   ]
-
 
 with-local-randomness [ random-seed 47822 ask walkers with [getting-back? = FALSE]
 
@@ -544,7 +672,7 @@ with-local-randomness [ random-seed 47822 ask walkers with [getting-back? = FALS
           let dest-nodes2 dest-nodes with [ distance myself < trip-distance ]
 
         ifelse fixed-OD? = TRUE
-           [ set destination one-of dest-nodes2 with-max [ distance myself ] ]
+           [ set destination one-of dest-nodes2 with-max [ distance myself ]]
            [ set destination one-of dest-nodes2 ]
           ask destination [ set color white set size 2]
           set color one-of remove grey base-colors ] ]
@@ -604,22 +732,34 @@ to go
   if count walkers with [ reached-target? = false ] < 1 [
   let out-list reduce sentence [self-who-tick-coords] of walkers
   set out-list fput [ "who" "tick" "lon" "lat" ] out-list
-  print out-list
-    ifelse utility?
-    [ csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/maintainer.csv" out-list ]
-    [ csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/coords_trivial.csv" out-list ]
+    ifelse save-coords?
+    [ ifelse df?
+      [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/dfon.csv" out-list ]
+      [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/dfoff.csv" out-list ] ]
+    [ show "Files not saved"  ]
 
   show "Experiment is done"
 
     stop ]
 
-   ask walkers  [
+   ask walkers with [ reached-target? = false ] [
     set coordinates lput self-ticks-coords coordinates
     ifelse draw-path?
     [ pen-down ]
     [ pen-up]
 
    ]
+
+   ask patches [
+
+  if (walkable-environment = TRUE) [
+    if count walkers-here > 0 [
+      let agent-num count walkers-here
+      set integration (integration + agent-num)
+        if integration > 0.05 * num-agen [ set visited-flag true ] ]
+
+  ]
+]
 
  go-to-destination
 
@@ -629,7 +769,7 @@ end
 
 to go-to-destination  ;; turtle procedure
 
-  ask walkers [
+  ask walkers with [ reached-target? = false ] [
 
     let dest nodes in-radius 7
     if one-of dest = destination [ set reached-target? true ]
@@ -646,7 +786,7 @@ to go-to-destination  ;; turtle procedure
     if count grid-node > 0 and one-of grid-node = path-node and length path > 0 [
         set path remove-item 0 path ]
 
-    let crowd-num count crowds in-cone 1 45
+    let crowd-num count crowds in-cone 2 45
     let hum-num crowd-num
     ifelse hum-num > crowd-tolerance
     [ draw-manouver ]
@@ -657,7 +797,7 @@ to go-to-destination  ;; turtle procedure
 end
 
 to draw-manouver
-  lt random 180
+  lt random 45
   fd random-float 0.5 + 0.3
 
   slow-down
@@ -669,7 +809,7 @@ to slow-down
    let people-ahead-x other crowds in-cone GIS-distance 90
    let person-ahead-x min-one-of people-ahead-x [distance myself]
 
-   if person-ahead-x != nobody and speed > 0.2 [
+   if person-ahead-x != nobody and speed > 0.3 [
     set speed speed - 0.1 ]
 
    let crossings-ahead nodes in-cone GIS-distance 90
@@ -696,7 +836,7 @@ to-report dijkstra [ start-node finish-node ] ;; basic Dijkstra
 let current-walker walker who
   ask nodes [
     set dijkstra-visited? false
-    set dijkstra-distance ifelse-value (self = start-node) [0] [10 ^ 4] ; 'infinity'
+    set dijkstra-distance ifelse-value (self = start-node) [0] [10 ^ 200] ; 'infinity'
     set dijkstra-previous nobody
   ]
 
@@ -768,7 +908,7 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
 
   ask nodes [
     set dijkstra-visited? false
-    set dijkstra-distance ifelse-value (self = start-node) [0] [10 ^ 200] ; 'infinity'
+    set dijkstra-distance ifelse-value (self = start-node) [0] [10 ^ 4] ; 'infinity'
     set dijkstra-previous nobody
   ]
 
@@ -812,11 +952,13 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
 
          let attr [atractor] of current-walker
          let dist [distractor] of current-walker
-          let add [attractor-sensitivity] of current-walker
-          let sub [distractor-sensitivity] of current-walker
+         let add-l [attractor-sensitivity-l] of current-walker
+         let sub-l [distractor-sensitivity-l] of current-walker
+         let add-h [attractor-sensitivity-h] of current-walker
+         let sub-h [distractor-sensitivity-h] of current-walker
         ;  let stoch [stochastic-component] of current-walker
-          let spon [spontainity] of current-walker
-          let disc [discount] of current-walker
+         let spon [spontainity] of current-walker
+         let disc [discount] of current-walker
 
          let c-good sum map [ i -> frequency I attr] nodal-tags ;; for each match "walker - node tags" +1 (counts frequency)
          let c-bad sum map [ i -> frequency I dist] nodal-tags ;; for each match "walker - node tags" +1 (counts frequency)
@@ -825,26 +967,22 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
 
           ;; each turtle differ in-term of costs
        ;  ifelse count my-routes > 1 [
-          let lower-add add - route-variability * add
-          let upper-add add + route-variability * add
+          let lower-add add-l - route-variability * add-l
+          let upper-add add-h + route-variability * add-h
 
-          let lower-sub sub - route-variability * sub
-          let upper-sub sub + route-variability * sub
+          let lower-sub sub-l - route-variability * sub-l
+          let upper-sub sub-h + route-variability * add-h
 
-          set good-value c-good * (lower-add + (random-float (upper-add - lower-add))); frequency of attractor * sensitivity to attractor
+          set good-value c-good * (lower-add + (random-float (upper-add - lower-add)))     ; frequency of attractor * sensitivity to attractor
           set bad-value c-bad * (lower-sub + (random-float (upper-sub - lower-sub)))
 
-
-
-        ;  set good-value c-good * (random-normal add route-variability); frequency of attractor * sensitivity to attractor
-        ;  set bad-value c-bad * (random-normal sub route-variability)
-
-      ; total cost of given road segment (link); the bad and good values are weighted by link-length (cb)
+      ; total cost of given road segment (link); the bad and good value are weighted by link-length (cb)
       ; d - distance to destination; cb - link-length of given segment; disc - constans;
+      ; spon - random spontanity value to diversify routes of walkers (stochastic component of route behaviour)
       ; bad-value - frequency count of repellers at given node
       ; good-value - frequency of attractors at given node
 
-          let dd d + (cb * discount-rate) + (cb * bad-value) - (cb * good-value)
+          let dd d + (cb * segment-weight) + (cb * bad-value) - (cb * good-value) - (cb * spontaneousness)
 
          ifelse  dd < dijkstra-distance [
             set dijkstra-distance dd
@@ -931,11 +1069,6 @@ to-report simdist
   report mean [ sum-dist ] of walkers
 end
 
-to-report times
-  let tlist ( [walk-time] of walkers )
-  report tlist
-end
-
 to-report distances
   let dlist ( [sum-dist] of walkers )
   report dlist
@@ -944,6 +1077,12 @@ end
 to-report typ
   let tlist ( [my-type] of walkers )
   report tlist
+end
+
+to-report heterogeneity
+  let walki count patches with [ walkable-environment = true ]
+  let visit-walki count patches with [ walkable-environment = true and visited-flag = true]
+  report visit-walki / walki
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -1016,7 +1155,7 @@ num-agen
 num-agen
 0
 660
-15.0
+202.0
 1
 1
 NIL
@@ -1041,8 +1180,8 @@ SLIDER
 GIS-distance
 GIS-distance
 0
-15
-10.0
+28
+5.0
 1
 1
 NIL
@@ -1090,7 +1229,7 @@ hour
 hour
 1
 12
-12.0
+9.0
 1
 1
 NIL
@@ -1138,7 +1277,7 @@ crowd-tolerance
 crowd-tolerance
 1
 10
-10.0
+1.0
 1
 1
 NIL
@@ -1156,12 +1295,12 @@ get-back?
 -1000
 
 SWITCH
-19
-267
-122
-300
-utility?
-utility?
+6
+422
+135
+455
+save-coords?
+save-coords?
 0
 1
 -1000
@@ -1219,8 +1358,23 @@ trip-distance
 trip-distance
 10
 200
-200.0
+170.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+7
+346
+179
+379
+spontaneousness
+spontaneousness
+0
+1
+0.0
+0.1
 1
 NIL
 HORIZONTAL
@@ -1230,9 +1384,9 @@ SLIDER
 383
 179
 416
-discount-rate
-discount-rate
-0
+segment-weight
+segment-weight
+0.5
 1
 0.73
 0.01
@@ -1262,15 +1416,15 @@ SWITCH
 176
 replicate-walking-task?
 replicate-walking-task?
-0
+1
 1
 -1000
 
 SWITCH
-56
-460
-167
-493
+215
+405
+326
+438
 fixed-OD?
 fixed-OD?
 0
@@ -1278,19 +1432,63 @@ fixed-OD?
 -1000
 
 SLIDER
-214
-420
-386
-453
+216
+438
+388
+471
 route-variability
 route-variability
 0
-0.5
-0.3
+1
+0.1
 0.1
 1
 NIL
 HORIZONTAL
+
+SWITCH
+6
+492
+109
+525
+utility?
+utility?
+0
+1
+-1000
+
+SWITCH
+5
+458
+108
+491
+type-0?
+type-0?
+1
+1
+-1000
+
+SWITCH
+109
+267
+199
+300
+df?
+df?
+1
+1
+-1000
+
+MONITOR
+11
+260
+103
+305
+NIL
+heterogeneity
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1767,14 +1965,30 @@ NetLogo 6.4.0
       <value value="50"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="distances" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="distances" repetitions="10" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <exitCondition>ticks &gt; 0</exitCondition>
     <metric>distances</metric>
     <metric>typ</metric>
-    <enumeratedValueSet variable="crowd-tolerance">
-      <value value="5"/>
+    <enumeratedValueSet variable="get-back?">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="draw-path?">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hour">
+      <value value="9"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="time" repetitions="2" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>times</metric>
+    <metric>distances</metric>
+    <metric>typ</metric>
+    <enumeratedValueSet variable="threshold-crowd">
+      <value value="10"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="get-back?">
       <value value="false"/>
@@ -1782,21 +1996,26 @@ NetLogo 6.4.0
     <enumeratedValueSet variable="utility?">
       <value value="true"/>
     </enumeratedValueSet>
-  </experiment>
-  <experiment name="time" repetitions="1" runMetricsEveryStep="true">
-    <setup>setup</setup>
-    <go>go</go>
-    <metric>times</metric>
-    <metric>distances</metric>
-    <metric>typ</metric>
-    <enumeratedValueSet variable="crowd-tolerance">
+    <enumeratedValueSet variable="num-agen">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
       <value value="5"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="get-back?">
-      <value value="false"/>
+    <enumeratedValueSet variable="draw-path?">
+      <value value="true"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="utility?">
-      <value value="false"/>
+    <enumeratedValueSet variable="good-added">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="bad-added">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="hour">
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="trip-distance">
+      <value value="50"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

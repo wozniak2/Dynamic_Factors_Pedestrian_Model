@@ -60,6 +60,8 @@ patches-own [
   tag_bui-res
   traffic-intensity
   pois-intensity
+  integration
+  visited-flag
 ]
 
 nodes-own [
@@ -115,7 +117,7 @@ to setup
   reset-ticks
   ask patches [set pcolor black]
 
-  set paths gis:load-dataset "data/paths27.shp"
+  set paths gis:load-dataset "data/paths28.shp"
   set build gis:load-dataset "data/bui3.shp"
   set parks gis:load-dataset "data/trees.shp"
   set embar gis:load-dataset "data/walls.shp"
@@ -360,7 +362,7 @@ to setup-data
     if item crowd-intensity pois-intensity > crowd-tolerance [set tag_int "crowd" ]
     sprout-crowds item crowd-intensity pois-intensity
     ask crowds [set shape "person" set size 2 set color grey
-    let nd nodes in-radius 20
+    let nd nodes in-radius 25
     let my-nd one-of nd
     move-to my-nd
     ]
@@ -424,7 +426,10 @@ output-print "-----------------------------------------------"
                 set tag_lights sentence tag_lights tag_land
                 set tag_lights sentence tag_lights tag_bui-res
                 set tag_lights sentence tag_lights tag_crowd
-                set tag sentence tag_lights tag_parks ]
+                set tag sentence tag_lights tag_parks
+
+                set integration 0
+                set visited-flag false ]
 
   ask nodes [ set nodal-tags [tag] of patches in-radius GIS-distance  ;; import list of tags to nodes
   set nodal-tags reduce sentence reduce sentence nodal-tags ;; escaping from these double brackets [[]]
@@ -605,13 +610,26 @@ to go
 
     stop ]
 
-   ask walkers  [
+   ask walkers with[ reached-target? = false ] [
   ;  set coordinates lput self-ticks-coords coordinates
     ifelse draw-path?
     [ pen-down ]
     [ pen-up]
 
    ]
+
+
+ask patches [
+
+  if (walkable-environment = TRUE) [
+    if count walkers-here > 0 [
+      let agent-num count walkers-here
+      set integration (integration + agent-num)
+        if integration > 1 [ set visited-flag true ] ]
+
+  ]
+]
+
 
  go-to-destination
 
@@ -638,7 +656,7 @@ to go-to-destination  ;; turtle procedure
     if count grid-node > 0 and one-of grid-node = path-node and length path > 0 [
         set path remove-item 0 path ]
 
-    let crowd-num count crowds in-cone 1 45
+    let crowd-num count crowds in-cone 2 45
     let hum-num crowd-num
     ifelse hum-num > crowd-tolerance
     [ draw-manouver ]
@@ -649,7 +667,7 @@ to go-to-destination  ;; turtle procedure
 end
 
 to draw-manouver
-  lt random 180
+  lt random 100
   fd random-float 0.5 + 0.3
 
   slow-down
@@ -819,17 +837,17 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
        ;  ifelse count my-routes > 1 [
           ;; each turtle differ in-term of costs
        ;  ifelse count my-routes > 1 [
-          let lower-add add - route-deviation * add
-          let upper-add add + route-deviation * add
+          let lower-add add - route-variability * add
+          let upper-add add + route-variability * add
 
-          let lower-sub sub - route-deviation * sub
-          let upper-sub sub + route-deviation * sub
+          let lower-sub sub - route-variability * sub
+          let upper-sub sub + route-variability * sub
 
           set good-value c-good * (lower-add + (random-float (upper-add - lower-add))); frequency of attractor * sensitivity to attractor
           set bad-value c-bad * (lower-sub + (random-float (upper-sub - lower-sub)))
 
-          set good-value c-good * (random-normal add route-deviation); frequency of attractor * sensitivity to attractor
-          set bad-value c-bad * (random-normal sub route-deviation)
+          set good-value c-good * (random-normal add route-variability); frequency of attractor * sensitivity to attractor
+          set bad-value c-bad * (random-normal sub route-variability)
 
       ; total cost of given road segment (link); the bad and good value are weighted by link-length (cb)
       ; d - distance to destination; cb - link-length of given segment; disc - constans;
@@ -899,6 +917,12 @@ end
 
 end
 
+to-report heterogeneity
+  let walki count patches with [ walkable-environment = true ]
+  let visit-walki count patches with [ walkable-environment = true and visited-flag = true]
+  report visit-walki / walki
+end
+
 
 to-report self-ticks-coords
   ; Report the current ticks and then middle two 'envelope' values of the turtle
@@ -932,6 +956,10 @@ end
 to-report typ
   let tlist ( [my-type] of walkers )
   report tlist
+end
+
+to-report distance-m
+  report trip-distance * 5.5
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -1004,7 +1032,7 @@ num-agen
 num-agen
 0
 100
-30.0
+100.0
 1
 1
 NIL
@@ -1029,8 +1057,8 @@ SLIDER
 GIS-distance
 GIS-distance
 0
-15
-6.0
+27
+27.0
 1
 1
 NIL
@@ -1126,7 +1154,7 @@ crowd-tolerance
 crowd-tolerance
 1
 10
-1.0
+2.0
 1
 1
 NIL
@@ -1179,7 +1207,7 @@ simtime
 MONITOR
 21
 215
-125
+96
 260
 NIL
 mean-link-length
@@ -1206,8 +1234,8 @@ SLIDER
 trip-distance
 trip-distance
 10
-100
-40.0
+250
+250.0
 1
 1
 NIL
@@ -1252,7 +1280,7 @@ segment-weight
 segment-weight
 0.5
 1
-0.7
+0.73
 0.01
 1
 NIL
@@ -1267,7 +1295,7 @@ noise-intensity
 noise-intensity
 0
 42
-20.0
+42.0
 1
 1
 NIL
@@ -1289,8 +1317,8 @@ SLIDER
 448
 210
 481
-route-deviation
-route-deviation
+route-variability
+route-variability
 0
 1
 0.3
@@ -1309,6 +1337,28 @@ fixed-OD?
 0
 1
 -1000
+
+MONITOR
+108
+216
+200
+261
+NIL
+heterogeneity
+17
+1
+11
+
+MONITOR
+79
+554
+152
+599
+NIL
+distance-m
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
