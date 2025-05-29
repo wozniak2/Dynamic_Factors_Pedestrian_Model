@@ -177,6 +177,10 @@ end
 to make-road-network
 
 output-print "--------------- Starting setup procedure... ------------------"
+
+; built graph from roads layer
+
+; vertices
 foreach gis:feature-list-of paths [
 i ->
   foreach gis:vertex-lists-of i [
@@ -224,6 +228,7 @@ i ->
   ask nodes  [set traf-int [] ]
 
 ;; importing properties from GIS files to patches
+
   ask patches [ set tag_land [] ]
 
  ask patches gis:intersecting parks [
@@ -321,7 +326,7 @@ output-print "crowd done"
 end
 
 to setup-data
-  ; transfering Google populartimes data to nodes: tram stops & pois
+  ; transfering Google populartimes data to nodes: CROWD
    set tram-data csv:from-file "data/tram_dta_transposed.csv"
 
   ask patches with [ tag_tram != 0] [
@@ -566,7 +571,7 @@ to setup-agents
       set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
       set discount segment-weight ;0.05
 
-    ]]
+    ] ]
 
 
 
@@ -647,8 +652,10 @@ to setup-agents
       set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
       set discount segment-weight ;0.05
 
-    ]]
+    ] ]
 
+
+    ;; ifelse? for Dynamic Factors ON or OFF finishes here
 
 
 
@@ -732,7 +739,7 @@ to go
   if count walkers with [ reached-target? = false ] < 1 [
   let out-list reduce sentence [self-who-tick-coords] of walkers
   set out-list fput [ "who" "tick" "lon" "lat" ] out-list
-    ifelse save-coords?
+    ifelse save-coords? ;; want to save the agent trajectories?
     [ ifelse df?
       [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/dfon.csv" out-list ]
       [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/dfoff.csv" out-list ] ]
