@@ -1,9 +1,12 @@
 # Pedestrian Agent-Based Model with crowd and noise (dynamic factors)
 The model simulates pedestrian traffic in the city center of Poznan (Poland).
-The model is parameterised according to emprical study that identified 5 different types of pedestrians: rational walker, maintainer, landmark, environmental and spontaneous.
-Each type is characterised by different behavioural routines that are assocciated with "repellers" and "attractors" that are elements of urban morphology like green areas, POIs, tourist or historic attractions.
-Dynamic factors are repellers that are volatile stimuli arising from social or natural environments. The model implements crowd and noise as dynamic factors that can be encounter quite often during everyday walks accross the city.
-The model illustrates how dynamic factors impact route patterns of pedestrians. 
+The model is parameterised according to the emprical study that identified 5 different types of pedestrians: rational walker, maintainer, landmark, environmental and spontaneous.
+Each type is characterised by different behavioural routines that are assocciated with so called "repellers" and "attractors". 
+These are elements of urban morphology like green areas, POIs, road crossings that either attract pedestrian to choose specific path or repell to take one.
+Dynamic factors are repellers that are volatile stimuli arising from social or natural environments. 
+The model implements two major dynamic factors that are particularly important in urban settings: crowd and noise.
+that can be encounter quite often during everyday walks accross the city.
+Finally, the model illustrates how crowd and noise impact patterns of pedestrian movements accross case study area. 
 
 ## **Inside:** 
 - **SA** folder with sensitivity analysis scripts (Python) for NetLogo model
