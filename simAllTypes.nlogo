@@ -469,7 +469,7 @@ table:put sensitivities "high_low" 0.60
 table:put sensitivities "high_up" 0.80
 
 table:put sensitivities "very_high_low" 0.80
-table:put sensitivities "very_high_up" 1.00
+table:put sensitivities "very_high_up" 0.95
 
   setup-agents
 
@@ -489,7 +489,7 @@ to setup-agents
 
     ifelse type-0?
     [let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous" "type-0"] set my-type one-of types ]
-    [let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"] set my-type one-of types ]
+    [let types ["rational-walker" "maintainer" "environmental" "landmark" "spontaneous"] set my-type "environmental"]
 
 
     ifelse df?
@@ -549,12 +549,12 @@ to setup-agents
 
      if my-type = "landmark" [
 
-      set atractor ["landmark" "historic"]
-      set distractor ["crowd" "noise" "emban"]
+      set atractor ["landmark" "crossing"] ; "landmark" "historic"
+      set distractor ["crowd" "noise"]
       set spontainity 0 ;0.9 + random-float 0.2
-      set attractor-sensitivity-l table:get sensitivities "high_low" ;0.4
+      set attractor-sensitivity-l table:get sensitivities "high_low" ;high
       set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
-      set attractor-sensitivity-h table:get sensitivities "high_up" ;0.4
+      set attractor-sensitivity-h table:get sensitivities "high_up" ;high
       set distractor-sensitivity-h table:get sensitivities "low_up" ;0.2
        set discount segment-weight ;0.08
 
@@ -562,18 +562,18 @@ to setup-agents
 
      if my-type = "spontaneous" [
 
-      set atractor ["spontan" "retail" ]
-      set distractor [ "lights"]
+      set atractor ["spontan" "retail"]
+      set distractor [ "lights" "crowd"]
       set spontainity 0 ;1
-      set attractor-sensitivity-l table:get sensitivities "very_high_low" ;0.4
+      set attractor-sensitivity-l table:get sensitivities "high_low" ;0.4
       set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
-      set attractor-sensitivity-h table:get sensitivities "low_up" ;0.4
-      set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "high_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "low_up" ;0.2
       set discount segment-weight ;0.05
 
     ] ]
 
-
+ ;;;; here stops DF model mod
 
     [if my-type = "type-0" [
 
@@ -589,7 +589,7 @@ to setup-agents
     ]
 
 
-    if my-type = "rational-walker" [
+   if my-type = "rational-walker" [
 
     set atractor ["rational" "crossing"]
     set distractor [ "lights"  ]
@@ -605,7 +605,7 @@ to setup-agents
   if my-type = "maintainer" [
 
       set atractor ["maintainer" "green"]
-      set distractor [ "emban"]
+      set distractor ["emban"]
       set spontainity 0;0.4
       set attractor-sensitivity-l table:get sensitivities "medium_low" ;0.4
       set distractor-sensitivity-l table:get sensitivities "very_high_low" ;0.2
@@ -630,12 +630,12 @@ to setup-agents
 
      if my-type = "landmark" [
 
-      set atractor ["landmark" "historic"]
-      set distractor ["emban"]
+      set atractor ["landmark" "crossing"] ; "landmark" "historic"
+      set distractor []
       set spontainity 0 ;0.9 + random-float 0.2
-      set attractor-sensitivity-l table:get sensitivities "high_low" ;0.4
+      set attractor-sensitivity-l table:get sensitivities "high_low" ;high
       set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
-      set attractor-sensitivity-h table:get sensitivities "high_up" ;0.4
+      set attractor-sensitivity-h table:get sensitivities "high_up" ;high
       set distractor-sensitivity-h table:get sensitivities "low_up" ;0.2
        set discount segment-weight ;0.08
 
@@ -643,17 +643,16 @@ to setup-agents
 
      if my-type = "spontaneous" [
 
-      set atractor ["spontan" "retail" ]
+      set atractor ["spontan" "retail"]
       set distractor [ "lights"]
       set spontainity 0 ;1
-      set attractor-sensitivity-l table:get sensitivities "very_high_low" ;0.4
+      set attractor-sensitivity-l table:get sensitivities "high_low" ;0.4
       set distractor-sensitivity-l table:get sensitivities "low_low" ;0.2
-      set attractor-sensitivity-h table:get sensitivities "low_up" ;0.4
-      set distractor-sensitivity-h table:get sensitivities "very_high_up" ;0.2
+      set attractor-sensitivity-h table:get sensitivities "high_up" ;0.4
+      set distractor-sensitivity-h table:get sensitivities "low_up" ;0.2
       set discount segment-weight ;0.05
 
     ] ]
-
 
     ;; ifelse? for Dynamic Factors ON or OFF finishes here
 
@@ -741,8 +740,8 @@ to go
   set out-list fput [ "who" "tick" "lon" "lat" ] out-list
     ifelse save-coords? ;; want to save the agent trajectories?
     [ ifelse df?
-      [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/dfon.csv" out-list ]
-      [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/sim_data/dfoff.csv" out-list ] ]
+      [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/dfon.csv" out-list ]
+      [csv:to-file "C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/dfoff.csv" out-list ] ]
     [ show "Files not saved"  ]
 
   show "Experiment is done"
@@ -763,7 +762,7 @@ to go
     if count walkers-here > 0 [
       let agent-num count walkers-here
       set integration (integration + agent-num)
-        if integration > 0.05 * num-agen [ set visited-flag true ] ]
+        if integration >= 0.05 * num-agen [ set visited-flag true ] ]
 
   ]
 ]
@@ -989,7 +988,7 @@ to-report dijkstra-utility [ start-node finish-node ] ;; Dijkstra utility
       ; bad-value - frequency count of repellers at given node
       ; good-value - frequency of attractors at given node
 
-          let dd d + (cb * segment-weight) + (cb * bad-value) - (cb * good-value) - (cb * spontaneousness)
+          let dd d + (cb * segment-weight) + (cb * bad-value) - (cb * good-value)
 
          ifelse  dd < dijkstra-distance [
             set dijkstra-distance dd
@@ -1162,7 +1161,7 @@ num-agen
 num-agen
 0
 660
-202.0
+660.0
 1
 1
 NIL
@@ -1188,7 +1187,7 @@ GIS-distance
 GIS-distance
 0
 28
-5.0
+3.0
 1
 1
 NIL
@@ -1284,7 +1283,7 @@ crowd-tolerance
 crowd-tolerance
 1
 10
-1.0
+2.0
 1
 1
 NIL
@@ -1395,7 +1394,7 @@ segment-weight
 segment-weight
 0.5
 1
-0.73
+0.68
 0.01
 1
 NIL
@@ -1447,7 +1446,7 @@ route-variability
 route-variability
 0
 1
-0.1
+0.3
 0.1
 1
 NIL
@@ -1482,7 +1481,7 @@ SWITCH
 300
 df?
 df?
-1
+0
 1
 -1000
 
@@ -1982,7 +1981,7 @@ NetLogo 6.4.0
       <value value="false"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="draw-path?">
-      <value value="true"/>
+      <value value="false"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="hour">
       <value value="9"/>

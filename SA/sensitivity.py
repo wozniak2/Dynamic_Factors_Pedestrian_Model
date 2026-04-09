@@ -28,25 +28,25 @@ from SALib.analyze import sobol
 problem = {
     "num_vars": 8,
     "names": [
-        "attractor-strength",
-        "repeller-strength",
+        "attractor-sensitivity",
+        "repeller-sensitivity",
          "crowd-intensity",
-         "noise-intensity",
-         "trip-distance",
-         "GIS-distance",
+         "noise-propagation",
+         "EOD",
+         "node-stimulus-distance",
          "route-variability",
-         "segment-weight",
+         "segment-cost-weight",
     ],
     
     "bounds": [
         [0, 1],
         [0, 1],
-        [1, 12],
-        [0, 42],
-        [40, 200],
+        [0, 12],
+        [0, 1],
+        [220, 1100],
         [1, 20],
         [0, 0.7],
-        [0.1, 1],
+        [0, 1],
     ],
     
 }
@@ -55,7 +55,7 @@ problem = {
 # for each experiment and columns for each input parameter.
 # Should be more; 10 is for tests
 
-n = 15
+n = 256
 param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 # Start engines (6 cores)
@@ -121,6 +121,8 @@ lview = client.load_balanced_view()
 results = pd.DataFrame(lview.map_sync(simulation, param_values))
 results.to_csv("./Sobol_parallel.csv")
 
+results = pd.read_csv('C:/Users/wozni/OneDrive/Documents/GitHub/NetLogo_Pedestrian_Model/data/Sobol_parallel.csv')
+
 # results.iloc[1,0].mean()
 
 netlogo.kill_workspace()
@@ -163,10 +165,12 @@ for i, ax in enumerate(ax.flatten()):
     )
     if divmod(i, ncol)[1] > 0:
         ax.get_yaxis().set_visible(False)
-    ax.set_xlabel(problem["names"][i])
+    ax.set_xlabel(problem["names"][i], fontsize = 13)
     ax.set_ylim([0, 1.1 * np.max(y)])
+    ax.set_ylabel('Avg. distances', fontsize=16)
   
-fig.set_size_inches(11, 5, forward=True)
+  
+fig.set_size_inches(11, 6, forward=True)
 fig.subplots_adjust(wspace=0.3, hspace=0.45)
 
 plt.show() 
@@ -239,10 +243,12 @@ for i, ax in enumerate(ax.flatten()):
     )
     if divmod(i, ncol)[1] > 0:
         ax.get_yaxis().set_visible(False)
-    ax.set_xlabel(problem["names"][i])
+    ax.set_xlabel(problem["names"][i], fontsize = 13)
     ax.set_ylim([0, 1.1 * np.max(y)])
+    ax.set_ylabel('Dispersion', fontsize=16)
   
-fig.set_size_inches(11, 5, forward=True)
+  
+fig.set_size_inches(11, 6, forward=True)
 fig.subplots_adjust(wspace=0.3, hspace=0.45)
 
 plt.show() 
@@ -282,7 +288,7 @@ plt.show()
 
 Si = sobol.analyze(
     problem,
-    results["Heterogeneity"].values,
+    results["Avg. distances"].values,
     calc_second_order=True,
     print_to_console=False,
 )
@@ -424,9 +430,9 @@ def plot_sobol_indices(sobol_indices, criterion='ST', threshold=0.2):
     ax.spines['polar'].set_visible(False)
     ax.set_xticks(locs)                         ##  Fixed ##
 
-    ax.set_xticklabels(names, fontsize=21)                     
+    ax.set_xticklabels(names, fontsize=18)                     
     ax.set_yticklabels([]) 
-    ax.set_ylim(top=1.4)
+    ax.set_ylim(top=1.6)
     legend(ax)
 
     # plot ST
@@ -475,7 +481,7 @@ def legend(ax):
 
 fig = plot_sobol_indices(Si, criterion='ST', threshold=0.005)
 #plt.title("Heterogeneity", fontsize=35)
-fig.set_size_inches(17,15)
+fig.set_size_inches(12,12)
 plt.show() 
 
 
