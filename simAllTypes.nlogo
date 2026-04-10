@@ -269,6 +269,7 @@ print "historic places done"
 output-print "constructions done"
 
  let noise-patches patches gis:intersecting noise
+ ;; round(noise-intensity * 248)
  ask n-of (noise-intensity ^ 2 + 58) noise-patches [
   set tag_noise "noise"
     ]
@@ -361,7 +362,7 @@ to setup-data
     [
     let in-id item 0 item x pois-data
       if tag_pois = in-id  [
-    ;    show "match"
+    ;;    show "match"
     set pois-intensity item x pois-data
     set pois-intensity remove-item 0 pois-intensity
     ]
@@ -1161,7 +1162,7 @@ num-agen
 num-agen
 0
 660
-660.0
+4.0
 1
 1
 NIL
@@ -1364,7 +1365,7 @@ trip-distance
 trip-distance
 10
 200
-170.0
+178.0
 1
 1
 NIL
