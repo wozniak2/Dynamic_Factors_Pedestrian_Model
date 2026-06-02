@@ -165,9 +165,9 @@ for i, ax in enumerate(ax.flatten()):
     )
     if divmod(i, ncol)[1] > 0:
         ax.get_yaxis().set_visible(False)
-    ax.set_xlabel(problem["names"][i], fontsize = 13)
+    ax.set_xlabel(problem["names"][i], fontsize = 14)
     ax.set_ylim([0, 1.1 * np.max(y)])
-    ax.set_ylabel('Avg. distances', fontsize=16)
+    ax.set_ylabel('Avg. route length', fontsize=16)
   
   
 fig.set_size_inches(11, 6, forward=True)
@@ -208,7 +208,7 @@ for i, ax in enumerate(ax.flatten()):
     ax.set_xlabel(problem["names"][i])
     ax.set_ylim([0, 1.1 * np.max(y)])
   
-fig.set_size_inches(11, 5, forward=True)
+fig.set_size_inches(11, 6, forward=True)
 fig.subplots_adjust(wspace=0.3, hspace=0.45)
 
 plt.show() 
@@ -243,7 +243,7 @@ for i, ax in enumerate(ax.flatten()):
     )
     if divmod(i, ncol)[1] > 0:
         ax.get_yaxis().set_visible(False)
-    ax.set_xlabel(problem["names"][i], fontsize = 13)
+    ax.set_xlabel(problem["names"][i], fontsize = 14)
     ax.set_ylim([0, 1.1 * np.max(y)])
     ax.set_ylabel('Dispersion', fontsize=16)
   
